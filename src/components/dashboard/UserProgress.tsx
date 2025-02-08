@@ -2,13 +2,23 @@
 import { Trophy, Star, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useState, useEffect } from "react";
 
-export const UserProgress = () => {
-  const [totalXP, setTotalXP] = useState(60);
+interface UserProgressProps {
+  totalXP: number;
+}
+
+export const UserProgress = ({ totalXP }: UserProgressProps) => {
   const xpPerLevel = 100;
   const level = Math.floor(totalXP / xpPerLevel) + 1;
   const currentLevelXP = totalXP % xpPerLevel;
+  const maxLevel = 50;
+
+  const getCurrentLevel = () => {
+    const calculatedLevel = Math.floor(totalXP / xpPerLevel) + 1;
+    return Math.min(calculatedLevel, maxLevel);
+  };
+
+  const currentLevel = getCurrentLevel();
 
   return (
     <Card className="p-6 space-y-4">
@@ -18,8 +28,10 @@ export const UserProgress = () => {
             <Trophy className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Nivel {level}</h2>
-            <p className="text-sm text-muted-foreground">¡Sigue así!</p>
+            <h2 className="text-2xl font-bold">Nivel {currentLevel}</h2>
+            <p className="text-sm text-muted-foreground">
+              {currentLevel >= maxLevel ? "¡Nivel máximo alcanzado!" : "¡Sigue así!"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">

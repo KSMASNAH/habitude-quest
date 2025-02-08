@@ -1,4 +1,3 @@
-
 import { Target, Clock, CheckCircle, XCircle, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
@@ -15,7 +14,11 @@ interface Mission {
   xp: number;
 }
 
-export const MissionTracker = () => {
+interface MissionTrackerProps {
+  onXPGain: (xp: number) => void;
+}
+
+export const MissionTracker = ({ onXPGain }: MissionTrackerProps) => {
   const [missions, setMissions] = useState<Mission[]>([
     { id: 1, name: "Programar 1 hora", priority: "Media", deadline: "Hoy", status: "En progreso", xp: 20 },
     { id: 2, name: "Subir contenido a redes", priority: "Media", deadline: "Hoy", status: "Completada", xp: 20 },
@@ -29,21 +32,27 @@ export const MissionTracker = () => {
     setMissions(prevMissions => 
       prevMissions.map(mission => {
         if (mission.id === missionId) {
+          const prevStatus = mission.status;
           const newStatus = mission.status === "Completada" 
             ? "No completada" 
             : mission.status === "No completada"
             ? "En progreso"
             : "Completada";
           
-          const message = newStatus === "Completada" 
-            ? `¡Misión completada! +${mission.xp} XP` 
-            : newStatus === "No completada"
-            ? "Misión marcada como no completada"
-            : "Misión en progreso";
-          
-          toast(message, {
-            description: mission.name,
-          });
+          // Handle XP changes
+          if (newStatus === "Completada" && prevStatus !== "Completada") {
+            onXPGain(mission.xp);
+            toast(`¡Misión completada! +${mission.xp} XP`, {
+              description: mission.name,
+            });
+          } else if (prevStatus === "Completada" && newStatus !== "Completada") {
+            onXPGain(-mission.xp);
+            toast(newStatus === "No completada" 
+              ? "Misión marcada como no completada" 
+              : "Misión en progreso", {
+              description: mission.name,
+            });
+          }
           
           return { ...mission, status: newStatus };
         }

@@ -1,4 +1,3 @@
-
 import { Check, Clock, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
@@ -15,11 +14,15 @@ interface Habit {
   xp: number;
 }
 
-export const HabitTracker = () => {
+interface HabitTrackerProps {
+  onXPGain: (xp: number) => void;
+}
+
+export const HabitTracker = ({ onXPGain }: HabitTrackerProps) => {
   const [habits, setHabits] = useState<Habit[]>([
-    { id: 1, name: "Lavarme los dientes", frequency: "Diario", difficulty: "Fácil", completed: true, xp: 5 },
-    { id: 2, name: "Limpiar mi cuarto", frequency: "Semanal", difficulty: "Medio", completed: true, xp: 10 },
-    { id: 3, name: "Ser más aseado", frequency: "Diario", difficulty: "Fácil", completed: true, xp: 5 },
+    { id: 1, name: "Lavarme los dientes", frequency: "Diario", difficulty: "Fácil", completed: false, xp: 5 },
+    { id: 2, name: "Limpiar mi cuarto", frequency: "Semanal", difficulty: "Medio", completed: false, xp: 10 },
+    { id: 3, name: "Ser más aseado", frequency: "Diario", difficulty: "Fácil", completed: false, xp: 5 },
   ]);
 
   const [newHabitName, setNewHabitName] = useState("");
@@ -29,9 +32,17 @@ export const HabitTracker = () => {
       prevHabits.map(habit => {
         if (habit.id === habitId) {
           const newCompleted = !habit.completed;
-          toast(newCompleted ? `¡Hábito completado! +${habit.xp} XP` : "Hábito desmarcado", {
-            description: habit.name,
-          });
+          if (newCompleted) {
+            onXPGain(habit.xp);
+            toast(`¡Hábito completado! +${habit.xp} XP`, {
+              description: habit.name,
+            });
+          } else {
+            onXPGain(-habit.xp);
+            toast("Hábito desmarcado", {
+              description: habit.name,
+            });
+          }
           return { ...habit, completed: newCompleted };
         }
         return habit;
