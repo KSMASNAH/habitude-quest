@@ -1,7 +1,7 @@
 
 import { UserProgress } from "@/components/dashboard/UserProgress";
 import { HabitTracker } from "@/components/dashboard/HabitTracker";
-import { MissionTracker } from "@/components/dashboard/MissionTracker";
+import { MissionTracker } from "@/components/dashboard/mission/MissionTracker";
 import { Achievements } from "@/components/dashboard/Achievements";
 import { RewardShop } from "@/components/dashboard/RewardShop";
 import { DateHeader } from "@/components/dashboard/DateHeader";
