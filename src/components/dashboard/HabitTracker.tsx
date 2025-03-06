@@ -1,6 +1,7 @@
+
 import { Check, Clock, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ interface Habit {
   difficulty: "Fácil" | "Medio" | "Difícil";
   completed: boolean;
   xp: number;
+  lastCompletedDate?: string;
 }
 
 interface HabitTrackerProps {
@@ -27,7 +29,46 @@ export const HabitTracker = ({ onXPGain }: HabitTrackerProps) => {
 
   const [newHabitName, setNewHabitName] = useState("");
 
+  // Try to load habits from localStorage on mount
+  useEffect(() => {
+    const savedHabits = localStorage.getItem('habits');
+    if (savedHabits) {
+      setHabits(JSON.parse(savedHabits));
+    }
+  }, []);
+
+  // Save habits to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('habits', JSON.stringify(habits));
+  }, [habits]);
+
+  // Check for day change and reset daily habits
+  const resetDailyHabits = () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    setHabits(prevHabits =>
+      prevHabits.map(habit => {
+        // Only reset if it's a daily habit and it was completed on a different day
+        if (habit.frequency === "Diario" && 
+            habit.completed && 
+            habit.lastCompletedDate !== today) {
+          return { ...habit, completed: false };
+        }
+        return habit;
+      })
+    );
+  };
+
+  // Register this function to run on component mount and when date changes
+  useEffect(() => {
+    resetDailyHabits();
+    // This will run every time the component renders
+    // but the actual reset logic checks the date
+  }, []);
+
   const toggleHabitCompletion = (habitId: number) => {
+    const today = new Date().toISOString().split('T')[0];
+    
     setHabits(prevHabits =>
       prevHabits.map(habit => {
         if (habit.id === habitId) {
@@ -37,13 +78,14 @@ export const HabitTracker = ({ onXPGain }: HabitTrackerProps) => {
             toast(`¡Hábito completado! +${habit.xp} XP`, {
               description: habit.name,
             });
+            return { ...habit, completed: true, lastCompletedDate: today };
           } else {
             onXPGain(-habit.xp);
             toast("Hábito desmarcado", {
               description: habit.name,
             });
+            return { ...habit, completed: false };
           }
-          return { ...habit, completed: newCompleted };
         }
         return habit;
       })

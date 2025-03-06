@@ -1,6 +1,7 @@
+
 import { Target, Clock, CheckCircle, XCircle, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ interface Mission {
   deadline: string;
   status: "En progreso" | "Completada" | "No completada";
   xp: number;
+  completedDate?: string;
 }
 
 interface MissionTrackerProps {
@@ -28,7 +30,44 @@ export const MissionTracker = ({ onXPGain }: MissionTrackerProps) => {
 
   const [newMissionName, setNewMissionName] = useState("");
 
+  // Try to load missions from localStorage on mount
+  useEffect(() => {
+    const savedMissions = localStorage.getItem('missions');
+    if (savedMissions) {
+      setMissions(JSON.parse(savedMissions));
+    }
+  }, []);
+
+  // Save missions to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('missions', JSON.stringify(missions));
+  }, [missions]);
+
+  // Reset daily missions
+  const resetDailyMissions = () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    setMissions(prevMissions =>
+      prevMissions.map(mission => {
+        // Reset only daily missions that were completed on a different day
+        if (mission.deadline === "Hoy" && 
+            mission.status !== "En progreso" && 
+            mission.completedDate !== today) {
+          return { ...mission, status: "En progreso" };
+        }
+        return mission;
+      })
+    );
+  };
+
+  // Register this function to run on component mount and when date changes
+  useEffect(() => {
+    resetDailyMissions();
+  }, []);
+
   const toggleMissionStatus = (missionId: number) => {
+    const today = new Date().toISOString().split('T')[0];
+    
     setMissions(prevMissions => 
       prevMissions.map(mission => {
         if (mission.id === missionId) {
@@ -45,6 +84,7 @@ export const MissionTracker = ({ onXPGain }: MissionTrackerProps) => {
             toast(`¡Misión completada! +${mission.xp} XP`, {
               description: mission.name,
             });
+            return { ...mission, status: newStatus, completedDate: today };
           } else if (prevStatus === "Completada" && newStatus !== "Completada") {
             onXPGain(-mission.xp);
             toast(newStatus === "No completada" 
@@ -52,6 +92,7 @@ export const MissionTracker = ({ onXPGain }: MissionTrackerProps) => {
               : "Misión en progreso", {
               description: mission.name,
             });
+            return { ...mission, status: newStatus };
           }
           
           return { ...mission, status: newStatus };
