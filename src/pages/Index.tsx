@@ -40,6 +40,16 @@ const Index = () => {
     localStorage.setItem('totalXP', totalXP.toString());
   }, [totalXP]);
 
+  // Check for achievement XP
+  useEffect(() => {
+    const achievementXP = localStorage.getItem('achievementXP');
+    if (achievementXP) {
+      const xp = parseInt(achievementXP);
+      setTotalXP(prev => prev + xp);
+      localStorage.removeItem('achievementXP');
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
