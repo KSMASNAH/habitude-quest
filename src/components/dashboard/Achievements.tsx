@@ -1,4 +1,3 @@
-
 import { Medal, Star, Edit2, Save, Plus, Trash } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -67,6 +66,42 @@ export const Achievements = ({ totalXP, level }: AchievementsProps) => {
       badge: "🏅", 
       xpBonus: 30, 
       xpRequired: 150,
+      unlocked: false 
+    },
+    { 
+      id: 6, 
+      name: "Maestro de Hábitos", 
+      icon: "✅", 
+      badge: "🎖️", 
+      xpBonus: 75, 
+      xpRequired: 250,
+      unlocked: false 
+    },
+    { 
+      id: 7, 
+      name: "Cumplidor de Misiones", 
+      icon: "🎯", 
+      badge: "🏆", 
+      xpBonus: 80, 
+      xpRequired: 300,
+      unlocked: false 
+    },
+    { 
+      id: 8, 
+      name: "Constancia Diaria", 
+      icon: "📅", 
+      badge: "💎", 
+      xpBonus: 60, 
+      xpRequired: 200,
+      unlocked: false 
+    },
+    { 
+      id: 9, 
+      name: "Responsabilidad Total", 
+      icon: "⏰", 
+      badge: "🥇", 
+      xpBonus: 90, 
+      xpRequired: 350,
       unlocked: false 
     },
   ];

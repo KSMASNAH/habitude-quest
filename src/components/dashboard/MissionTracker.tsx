@@ -1,4 +1,3 @@
-
 import { Target, Clock, CheckCircle, XCircle, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -63,6 +62,22 @@ export const MissionTracker = ({ onXPGain }: MissionTrackerProps) => {
   // Register this function to run on component mount and when date changes
   useEffect(() => {
     resetDailyMissions();
+    
+    // Check for changes in localStorage from day change handler in Index.tsx
+    const checkForUpdates = () => {
+      const savedMissions = localStorage.getItem('missions');
+      if (savedMissions) {
+        setMissions(JSON.parse(savedMissions));
+      }
+    };
+    
+    // Set up event listener for storage changes
+    window.addEventListener('storage', checkForUpdates);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('storage', checkForUpdates);
+    };
   }, []);
 
   const toggleMissionStatus = (missionId: number) => {

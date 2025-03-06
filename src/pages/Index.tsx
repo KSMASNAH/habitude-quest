@@ -20,11 +20,51 @@ const Index = () => {
 
   // Handle day change (reset habits and missions)
   const handleDayChange = () => {
-    // We'll implement this to reset habits/missions
-    // without losing XP points
-    toast("¡Nuevo día! Tus hábitos y misiones se han restablecido", {
-      description: "Tus puntos se mantienen intactos"
+    // Reset habits and missions
+    const habits = JSON.parse(localStorage.getItem('habits') || '[]');
+    const missions = JSON.parse(localStorage.getItem('missions') || '[]');
+    
+    let xpToDeduct = 0;
+    
+    // Check for incomplete daily habits
+    const updatedHabits = habits.map(habit => {
+      if (habit.frequency === "Diario" && !habit.completed) {
+        xpToDeduct += habit.xp; // Deduct XP for each uncompleted daily habit
+        return { ...habit, completed: false };
+      }
+      if (habit.frequency === "Diario") {
+        return { ...habit, completed: false }; // Reset completed status for daily habits
+      }
+      return habit;
     });
+    
+    // Check for incomplete daily missions
+    const updatedMissions = missions.map(mission => {
+      if (mission.deadline === "Hoy" && mission.status === "En progreso") {
+        xpToDeduct += mission.xp; // Deduct XP for each uncompleted daily mission
+        return { ...mission, status: "No completada" };
+      }
+      if (mission.deadline === "Hoy" && mission.status === "Completada") {
+        return { ...mission, status: "En progreso" }; // Reset status for daily missions
+      }
+      return mission;
+    });
+    
+    // Update localStorage with the modified habits and missions
+    localStorage.setItem('habits', JSON.stringify(updatedHabits));
+    localStorage.setItem('missions', JSON.stringify(updatedMissions));
+    
+    // Deduct XP if needed
+    if (xpToDeduct > 0) {
+      handleXPGain(-xpToDeduct);
+      toast.error(`Se han restado ${xpToDeduct} puntos por tareas incompletas`, {
+        description: "Completa tus hábitos y misiones diarias para evitar perder puntos"
+      });
+    } else {
+      toast("¡Nuevo día! Tus hábitos y misiones se han restablecido", {
+        description: "Tus puntos se mantienen intactos"
+      });
+    }
   };
 
   // Try to get XP from localStorage on mount

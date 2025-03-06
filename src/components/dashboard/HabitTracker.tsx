@@ -1,4 +1,3 @@
-
 import { Check, Clock, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -62,8 +61,22 @@ export const HabitTracker = ({ onXPGain }: HabitTrackerProps) => {
   // Register this function to run on component mount and when date changes
   useEffect(() => {
     resetDailyHabits();
-    // This will run every time the component renders
-    // but the actual reset logic checks the date
+    
+    // Check for changes in localStorage from day change handler in Index.tsx
+    const checkForUpdates = () => {
+      const savedHabits = localStorage.getItem('habits');
+      if (savedHabits) {
+        setHabits(JSON.parse(savedHabits));
+      }
+    };
+    
+    // Set up event listener for storage changes
+    window.addEventListener('storage', checkForUpdates);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('storage', checkForUpdates);
+    };
   }, []);
 
   const toggleHabitCompletion = (habitId: number) => {
