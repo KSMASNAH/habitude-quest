@@ -1,7 +1,7 @@
 
-import { ShoppingBag, Plus } from "lucide-react";
+import { ShoppingBag, Plus, Trash } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -22,7 +22,11 @@ interface Reward {
   available: boolean;
 }
 
-export const RewardShop = () => {
+interface RewardShopProps {
+  totalXP: number;
+}
+
+export const RewardShop = ({ totalXP }: RewardShopProps) => {
   const [rewards, setRewards] = useState<Reward[]>([
     { id: 1, name: "Media hora de Tiburón", icon: "🦈", cost: 150, available: true },
     { id: 2, name: "Ver una película", icon: "🍿", cost: 200, available: true },
@@ -35,6 +39,22 @@ export const RewardShop = () => {
   const [newRewardIcon, setNewRewardIcon] = useState("🎁");
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [showNotEnoughXP, setShowNotEnoughXP] = useState(false);
+
+  // Load rewards from localStorage on mount
+  useEffect(() => {
+    const savedRewards = localStorage.getItem('rewards');
+    if (savedRewards) {
+      setRewards(JSON.parse(savedRewards));
+    }
+  }, []);
+
+  // Save rewards to localStorage when they change
+  useEffect(() => {
+    if (rewards.length > 0) {
+      localStorage.setItem('rewards', JSON.stringify(rewards));
+    }
+  }, [rewards]);
 
   const addReward = () => {
     if (!newRewardName.trim()) {
@@ -59,16 +79,31 @@ export const RewardShop = () => {
     });
   };
 
+  const deleteReward = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick
+    setRewards(prev => prev.filter(reward => reward.id !== id));
+    toast("Recompensa eliminada");
+  };
+
   const handleRewardClick = (reward: Reward) => {
-    setSelectedReward(reward);
-    setShowDialog(true);
-    
-    // Trigger confetti effect
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    if (totalXP >= reward.cost) {
+      setSelectedReward(reward);
+      setShowDialog(true);
+      
+      // Trigger confetti effect
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    } else {
+      setSelectedReward(reward);
+      setShowNotEnoughXP(true);
+      
+      toast.warning("¡Vamos, falta poco!", {
+        description: `Necesitas ${reward.cost - totalXP} XP más para esta recompensa`
+      });
+    }
   };
 
   const commonIcons = ["🎮", "🎁", "🍕", "🍦", "📱", "🎧", "🎬", "📚", "🎨", "🏖️"];
@@ -121,13 +156,24 @@ export const RewardShop = () => {
           <div
             key={reward.id}
             onClick={() => handleRewardClick(reward)}
-            className="p-3 rounded-lg bg-muted/50 border border-muted hover:border-primary/50 transition-colors cursor-pointer"
+            className={`p-3 rounded-lg ${totalXP >= reward.cost ? "bg-muted/50 border border-muted hover:border-primary/50" : "bg-muted/30 border border-muted"} transition-colors cursor-pointer relative`}
           >
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">{reward.icon}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 absolute top-1 right-1 text-destructive opacity-70 hover:opacity-100"
+                onClick={(e) => deleteReward(reward.id, e)}
+              >
+                <Trash className="w-3 h-3" />
+              </Button>
             </div>
             <p className="font-medium text-sm">{reward.name}</p>
-            <p className="text-sm text-primary font-semibold">{reward.cost} XP</p>
+            <p className={`text-sm font-semibold ${totalXP >= reward.cost ? "text-primary" : "text-muted-foreground"}`}>
+              {reward.cost} XP
+              {totalXP < reward.cost && ` (Faltan ${reward.cost - totalXP})`}
+            </p>
           </div>
         ))}
       </div>
@@ -145,6 +191,26 @@ export const RewardShop = () => {
               <span className="text-6xl mb-4">{selectedReward.icon}</span>
               <h3 className="text-xl font-bold mb-2">{selectedReward.name}</h3>
               <p className="text-muted-foreground">¡Disfruta de tu recompensa!</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showNotEnoughXP} onOpenChange={setShowNotEnoughXP}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>¡Vamos, falta poco! 💪</DialogTitle>
+            <DialogDescription>
+              Necesitas más XP para desbloquear esta recompensa
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReward && (
+            <div className="flex flex-col items-center py-6">
+              <span className="text-5xl mb-4">{selectedReward.icon}</span>
+              <h3 className="text-xl font-bold mb-2">{selectedReward.name}</h3>
+              <p className="text-primary font-medium mb-1">Costo: {selectedReward.cost} XP</p>
+              <p className="text-muted-foreground">Tu XP actual: {totalXP} XP</p>
+              <p className="font-semibold mt-4">¡Te faltan {selectedReward.cost - totalXP} XP!</p>
             </div>
           )}
         </DialogContent>

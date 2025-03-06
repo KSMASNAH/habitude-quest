@@ -47,6 +47,11 @@ const Index = () => {
       const xp = parseInt(achievementXP);
       setTotalXP(prev => prev + xp);
       localStorage.removeItem('achievementXP');
+      
+      // Show toast for achievement XP gain
+      toast.success(`¡Logro desbloqueado!`, {
+        description: `Has ganado ${xp} XP extra`
+      });
     }
   }, []);
 
@@ -68,7 +73,7 @@ const Index = () => {
         
         <div className="grid md:grid-cols-2 gap-8">
           <Achievements totalXP={totalXP} level={currentLevel} />
-          <RewardShop />
+          <RewardShop totalXP={totalXP} />
         </div>
       </div>
     </div>
