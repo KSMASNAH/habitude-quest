@@ -2,7 +2,6 @@
 import { Trophy, Star, Zap, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-// Removed bitcoin image import
 
 interface UserProgressProps {
   totalXP: number;
@@ -48,6 +47,11 @@ export const UserProgress = ({ totalXP }: UserProgressProps) => {
             <span className="font-semibold text-yellow-600">
               {coins}
             </span>
+            <img 
+              src="/lovable-uploads/9fc5d33e-dce1-48bb-aae4-379898141e34.png" 
+              alt="Bitcoin" 
+              className="w-5 h-5 ml-1" 
+            />
           </div>
         </div>
       </div>
