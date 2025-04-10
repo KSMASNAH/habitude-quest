@@ -18,10 +18,11 @@ const initialAchievements = [
 
 interface AchievementsProps {
   totalXP: number;
-  onXPGain: (xp: number) => void;
+  level: number;
+  onXPGain?: (xp: number) => void;
 }
 
-export const Achievements = ({ totalXP, onXPGain }: AchievementsProps) => {
+export const Achievements = ({ totalXP, level, onXPGain = () => {} }: AchievementsProps) => {
   const [achievements, setAchievements] = useState(initialAchievements);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newAchievement, setNewAchievement] = useState({
