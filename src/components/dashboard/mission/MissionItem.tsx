@@ -3,6 +3,7 @@ import { Target, Clock, CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Mission } from "@/types/mission";
 import { toast } from "sonner";
+import { useState, useEffect, useRef } from "react";
 
 interface MissionItemProps {
   mission: Mission;
@@ -11,6 +12,22 @@ interface MissionItemProps {
 }
 
 export const MissionItem = ({ mission, onToggle, onRemove }: MissionItemProps) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const deleteButtonRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (deleteButtonRef.current && !deleteButtonRef.current.contains(event.target as Node)) {
+        setShowDeleteConfirm(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
   return (
     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
       <div className="flex items-center gap-3">
@@ -48,14 +65,31 @@ export const MissionItem = ({ mission, onToggle, onRemove }: MissionItemProps) =
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-primary">+{mission.xp} XP</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive"
-          onClick={() => onRemove(mission.id)}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        
+        <div ref={deleteButtonRef}>
+          {showDeleteConfirm ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                onRemove(mission.id);
+                setShowDeleteConfirm(false);
+              }}
+            >
+              Quitar
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

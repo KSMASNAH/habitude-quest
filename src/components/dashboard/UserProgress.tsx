@@ -1,7 +1,8 @@
 
-import { Trophy, Star, Zap } from "lucide-react";
+import { Trophy, Star, Zap, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+// Removed bitcoin image import
 
 interface UserProgressProps {
   totalXP: number;
@@ -12,6 +13,9 @@ export const UserProgress = ({ totalXP }: UserProgressProps) => {
   const level = Math.floor(totalXP / xpPerLevel) + 1;
   const currentLevelXP = totalXP % xpPerLevel;
   const maxLevel = 50;
+  
+  // Calculate coins (1 coin per 10 XP)
+  const coins = Math.floor(totalXP / 10);
 
   const getCurrentLevel = () => {
     const calculatedLevel = Math.floor(totalXP / xpPerLevel) + 1;
@@ -34,9 +38,17 @@ export const UserProgress = ({ totalXP }: UserProgressProps) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-accent" />
-          <span className="font-semibold">{totalXP} XP</span>
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-accent" />
+            <span className="font-semibold">{totalXP} XP</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Coins className="w-5 h-5 text-yellow-500" />
+            <span className="font-semibold text-yellow-600">
+              {coins}
+            </span>
+          </div>
         </div>
       </div>
 
